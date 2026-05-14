@@ -3,10 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
+import emailjs from "@emailjs/browser";
 import { motion, AnimatePresence } from "motion/react";
 import { User, Network, Globe, MapPin, Calendar, X, ChevronLeft, ChevronRight, ArrowUp, Linkedin, Facebook, Github, Instagram, Send, Mail, Phone, Volume2, VolumeX } from "lucide-react";
 import Lenis from 'lenis';
+
+function getAssetUrl(path: string) {
+  const baseUrl = import.meta.env.BASE_URL.endsWith("/")
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+
+  return encodeURI(`${baseUrl}${path.replace(/^\/+/, "")}`);
+}
 
 const PROJECTS = [
   {
@@ -14,11 +23,11 @@ const PROJECTS = [
     title: "LifeSights",
     overview: "A smart analytics dashboard designed to make sense of your data. It connects directly to Google Drive, allowing you to easily analyze Excel or Google Sheets with the help of KPI cards, interactive charts, and an AI assistant that answers your specific data questions.",
     images: [
-      "/Public/LifeSights/1st.jpeg",
-      "/Public/LifeSights/WhatsApp Image 2026-05-08 at 1.09.46 PM (1).jpeg",
-      "/Public/LifeSights/WhatsApp Image 2026-05-08 at 1.09.46 PM.jpeg",
-      "/Public/LifeSights/WhatsApp Image 2026-05-08 at 1.09.47 PM.jpeg",
-      "/Public/LifeSights/WhatsApp Image 2026-05-08 at 1.09.48 PM.jpeg"
+      getAssetUrl("LifeSights/1st.jpeg"),
+      getAssetUrl("LifeSights/WhatsApp Image 2026-05-08 at 1.09.46 PM (1).jpeg"),
+      getAssetUrl("LifeSights/WhatsApp Image 2026-05-08 at 1.09.46 PM.jpeg"),
+      getAssetUrl("LifeSights/WhatsApp Image 2026-05-08 at 1.09.47 PM.jpeg"),
+      getAssetUrl("LifeSights/WhatsApp Image 2026-05-08 at 1.09.48 PM.jpeg")
     ]
   },
   {
@@ -26,10 +35,10 @@ const PROJECTS = [
     title: "Lifewood",
     overview: "A digital showcase for Lifewood, a global leader in AI data services. This project highlights their expertise in data annotation and LLM training, helping tell the story of their massive global network of delivery centers and multilingual data solutions.",
     images: [
-      "/Public/Lifewood/LW 1.png",
-      "/Public/Lifewood/LW 2.png",
-      "/Public/Lifewood/LW 3.png",
-      "/Public/Lifewood/LW 4.png"
+      getAssetUrl("Lifewood/LW 1.png"),
+      getAssetUrl("Lifewood/LW 2.png"),
+      getAssetUrl("Lifewood/LW 3.png"),
+      getAssetUrl("Lifewood/LW 4.png")
     ]
   },
   {
@@ -37,11 +46,11 @@ const PROJECTS = [
     title: "Break-in",
     overview: "A first-person psychological horror experience that follows the story of Victor, a father willing to risk everything to save his son. Players explore a cursed atmosphere, solving puzzles while avoiding a dangerous presence in a struggle for survival.",
     images: [
-      "/Public/Break-in/1st.jpeg",
-      "/Public/Break-in/WhatsApp Image 2026-05-08 at 2.59.13 PM (1).jpeg",
-      "/Public/Break-in/WhatsApp Image 2026-05-08 at 2.59.14 PM (1).jpeg",
-      "/Public/Break-in/WhatsApp Image 2026-05-08 at 2.59.14 PM (2).jpeg",
-      "/Public/Break-in/WhatsApp Image 2026-05-08 at 2.59.14 PM.jpeg"
+      getAssetUrl("Break-in/1st.jpeg"),
+      getAssetUrl("Break-in/WhatsApp Image 2026-05-08 at 2.59.13 PM (1).jpeg"),
+      getAssetUrl("Break-in/WhatsApp Image 2026-05-08 at 2.59.14 PM (1).jpeg"),
+      getAssetUrl("Break-in/WhatsApp Image 2026-05-08 at 2.59.14 PM (2).jpeg"),
+      getAssetUrl("Break-in/WhatsApp Image 2026-05-08 at 2.59.14 PM.jpeg")
     ]
   },
   {
@@ -49,16 +58,27 @@ const PROJECTS = [
     title: "WisEnergy",
     overview: "A helpful mobile app built to help families save energy. By tracking usage in real-time and providing AI-powered tips, it helps make homes more efficient and mindful of their impact through smart IoT integration.",
     images: [
-      "/Public/WisEnergy/1st.png",
-      "/Public/WisEnergy/Appliances.png",
-      "/Public/WisEnergy/Budget.png",
-      "/Public/WisEnergy/Dashboard 2.png",
-      "/Public/WisEnergy/Devices.png",
-      "/Public/WisEnergy/Reports (2) - Copy.png",
-      "/Public/WisEnergy/Reports a bugs.png"
+      getAssetUrl("WisEnergy/1st.png"),
+      getAssetUrl("WisEnergy/Appliances.png"),
+      getAssetUrl("WisEnergy/Budget.png"),
+      getAssetUrl("WisEnergy/Dashboard 2.png"),
+      getAssetUrl("WisEnergy/Devices.png"),
+      getAssetUrl("WisEnergy/Reports (2) - Copy.png"),
+      getAssetUrl("WisEnergy/Reports a bugs.png")
     ]
   }
 ];
+
+const BACKGROUND_AUDIO_SRC = getAssetUrl("Music/Kendrick Lamar  Chapter Six [Instrumental].mp3");
+const HERO_IMAGE_SRC = getAssetUrl("Other images/1.png");
+const ABOUT_IMAGE_SRC = getAssetUrl("Other images/2X2.png");
+const ABOUT_HOVER_IMAGE_SRC = getAssetUrl("Other images/1-1.png");
+const RESUME_FILE_SRC = getAssetUrl("Resume- Gerard Luis Mandado.pdf");
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID ?? "";
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID ?? "";
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY ?? "";
+const CONTACT_RECEIVER_EMAIL = "gerardmandado@gmail.com";
+const CONTACT_RECEIVER_NAME = "Gerard Mandado";
 
 export default function App() {
   const [isIntroComplete, setIsIntroComplete] = useState(false);
@@ -66,29 +86,192 @@ export default function App() {
   const [showResume, setShowResume] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [wantsAudio, setWantsAudio] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasAudioError, setHasAudioError] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    user_name: "",
+    user_email: "",
+    message: "",
+  });
+  const [contactStatus, setContactStatus] = useState<{
+    type: "idle" | "success" | "error";
+    message: string;
+  }>({
+    type: "idle",
+    message: "",
+  });
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const lenisRef = useRef<Lenis | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const contactFormRef = useRef<HTMLFormElement | null>(null);
+  const autoplayBlockedRef = useRef(false);
+  const isEmailJsConfigured = Boolean(
+    EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY
+  );
 
-  useEffect(() => {
-    if (isIntroComplete && audioRef.current && !isMuted) {
-      audioRef.current.play().catch(err => {
-        console.log("Autoplay blocked or audio error:", err);
-      });
+  const playBackgroundAudio = async (muted = false) => {
+    if (!audioRef.current || hasAudioError) {
+      return;
     }
-  }, [isIntroComplete, isMuted]);
 
-  const toggleMute = () => {
-    if (audioRef.current) {
-      if (isMuted) {
-        audioRef.current.play().catch(console.error);
-        audioRef.current.muted = false;
-      } else {
+    audioRef.current.muted = muted;
+
+    if (
+      !audioRef.current.currentSrc ||
+      audioRef.current.networkState === HTMLMediaElement.NETWORK_NO_SOURCE
+    ) {
+      audioRef.current.muted = true;
+      setHasAudioError(true);
+      setIsMuted(true);
+      return;
+    }
+
+    try {
+      await audioRef.current.play();
+    } catch {
+      if (!muted) {
+        autoplayBlockedRef.current = true;
         audioRef.current.muted = true;
+        setIsMuted(true);
+        try {
+          await audioRef.current.play();
+        } catch {
+          // Ignore repeated autoplay failures until the first user interaction.
+        }
       }
-      setIsMuted(!isMuted);
     }
   };
+
+  const toggleMute = () => {
+    if (audioRef.current && !hasAudioError) {
+      if (!wantsAudio) {
+        setWantsAudio(true);
+        audioRef.current.muted = false;
+        setIsMuted(false);
+        void playBackgroundAudio(false);
+      } else {
+        setWantsAudio(false);
+        audioRef.current.muted = true;
+        audioRef.current.pause();
+        setIsMuted(true);
+      }
+    }
+  };
+
+  const handleContactInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+
+    setContactForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (contactStatus.type !== "idle") {
+      setContactStatus({
+        type: "idle",
+        message: "",
+      });
+    }
+  };
+
+  const handleContactSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!contactFormRef.current) {
+      return;
+    }
+
+    if (!isEmailJsConfigured) {
+      setContactStatus({
+        type: "error",
+        message: "EmailJS is not configured yet. Add your service ID, template ID, and public key first.",
+      });
+      return;
+    }
+
+    setIsSendingMessage(true);
+    setContactStatus({
+      type: "idle",
+      message: "",
+    });
+
+    try {
+      await emailjs.sendForm(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        contactFormRef.current,
+        {
+          publicKey: EMAILJS_PUBLIC_KEY,
+        }
+      );
+
+      setContactForm({
+        user_name: "",
+        user_email: "",
+        message: "",
+      });
+      setContactStatus({
+        type: "success",
+        message: "Message sent successfully. Gerard will see it in his inbox.",
+      });
+    } catch (error) {
+      console.error("EmailJS send failed", error);
+      setContactStatus({
+        type: "error",
+        message: "Message could not be sent right now. Please try again in a moment.",
+      });
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
+  useEffect(() => {
+    if (hasAudioError || !wantsAudio) {
+      return;
+    }
+
+    void playBackgroundAudio(false);
+  }, [hasAudioError, wantsAudio]);
+
+  useEffect(() => {
+    if (hasAudioError) {
+      return;
+    }
+
+    const resumeAudio = () => {
+      if (!audioRef.current) {
+        return;
+      }
+
+      if (autoplayBlockedRef.current) {
+        autoplayBlockedRef.current = false;
+        audioRef.current.muted = false;
+        setWantsAudio(true);
+        setIsMuted(false);
+        void playBackgroundAudio(false);
+        return;
+      }
+
+      if (audioRef.current.paused && wantsAudio) {
+        void playBackgroundAudio(false);
+      } else {
+        audioRef.current.muted = isMuted;
+      }
+    };
+
+    window.addEventListener("pointerdown", resumeAudio, { once: true });
+    window.addEventListener("keydown", resumeAudio, { once: true });
+    document.addEventListener("visibilitychange", resumeAudio, { once: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", resumeAudio);
+      window.removeEventListener("keydown", resumeAudio);
+      document.removeEventListener("visibilitychange", resumeAudio);
+    };
+  }, [hasAudioError, isMuted, wantsAudio]);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -108,6 +291,10 @@ export default function App() {
 
     requestAnimationFrame(raf);
     lenisRef.current = lenis;
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    lenis.stop();
+    lenis.scrollTo(0, { immediate: true });
 
     // Handle anchor links
     const handleAnchorClick = (e: MouseEvent) => {
@@ -117,14 +304,9 @@ export default function App() {
         e.preventDefault();
         const element = document.querySelector(link.hash) as HTMLElement;
         if (element) {
-          // Calculate offset to center the section if it fits, otherwise scroll to top with a slight offset
-          const viewportHeight = window.innerHeight;
-          const elementHeight = element.offsetHeight;
-          const offset = elementHeight < viewportHeight 
-            ? -(viewportHeight - elementHeight) / 2 
-            : -40; // Small padding for large sections
-
-          lenis.scrollTo(element, { offset });
+          // Always align sections near the top of the viewport to avoid
+          // oscillation around in-view thresholds during smooth scrolling.
+          lenis.scrollTo(element, { offset: -40 });
         }
       }
     };
@@ -132,10 +314,28 @@ export default function App() {
     document.addEventListener('click', handleAnchorClick);
 
     return () => {
+      window.history.scrollRestoration = previousScrollRestoration;
       lenis.destroy();
       document.removeEventListener('click', handleAnchorClick);
     };
   }, []);
+
+  useEffect(() => {
+    const lenis = lenisRef.current;
+
+    if (!lenis) {
+      return;
+    }
+
+    if (!isIntroComplete) {
+      lenis.stop();
+      lenis.scrollTo(0, { immediate: true });
+      return;
+    }
+
+    lenis.start();
+    lenis.scrollTo(0, { immediate: true });
+  }, [isIntroComplete]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -183,6 +383,7 @@ export default function App() {
     const timer = setTimeout(() => {
       setIsIntroComplete(true);
     }, 2500);
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -190,9 +391,22 @@ export default function App() {
     <div className="min-h-screen bg-brand-black text-white relative">
       <audio 
         ref={audioRef}
-        src="/Public/Music/Kendrick%20Lamar%20%20Chapter%20Six%20%5BInstrumental%5D.mp3"
+        src={BACKGROUND_AUDIO_SRC}
+        autoPlay
         loop
         muted={isMuted}
+        playsInline
+        preload="auto"
+        onLoadedData={() => {
+          if (wantsAudio && audioRef.current?.paused) {
+            void playBackgroundAudio(false);
+          }
+        }}
+        onCanPlay={() => setHasAudioError(false)}
+        onError={() => {
+          setHasAudioError(true);
+          setIsMuted(true);
+        }}
       />
 
       {/* Music Toggle */}
@@ -201,12 +415,17 @@ export default function App() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 2.5 }}
         onClick={toggleMute}
-        className="fixed top-6 right-6 z-[80] w-10 h-10 border border-brand-yellow/30 bg-brand-black/50 backdrop-blur-md flex items-center justify-center text-brand-yellow hover:bg-brand-yellow hover:text-brand-black transition-all group"
-        title={isMuted ? "Unmute Music" : "Mute Music"}
+        disabled={hasAudioError}
+        className={`fixed top-6 right-6 z-[80] w-10 h-10 border border-brand-yellow/30 bg-brand-black/50 backdrop-blur-md flex items-center justify-center text-brand-yellow transition-all group ${
+          hasAudioError
+            ? "cursor-not-allowed opacity-40"
+            : "hover:bg-brand-yellow hover:text-brand-black"
+        }`}
+        title={hasAudioError ? "Music file not found" : isMuted ? "Unmute Music" : "Mute Music"}
       >
         {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-        <span className="absolute right-full mr-3 px-2 py-1 bg-brand-yellow text-brand-black text-[9px] font-bold uppercase tracking-widest pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-          {isMuted ? "MUTED" : "SOUND ON"}
+        <span className="absolute right-full mr-3 hidden px-2 py-1 bg-brand-yellow text-brand-black text-[9px] font-bold uppercase tracking-widest pointer-events-none opacity-0 transition-opacity whitespace-nowrap md:block group-hover:opacity-100">
+          {hasAudioError ? "NO AUDIO FILE" : isMuted ? "MUTED" : "SOUND ON"}
         </span>
       </motion.button>
       <AnimatePresence mode="wait">
@@ -228,25 +447,25 @@ export default function App() {
               className="absolute inset-0 bg-brand-yellow/5 origin-left"
             />
 
-            <div className="relative z-10 text-center space-y-8">
+            <div className="relative z-10 text-center space-y-6 px-6 md:space-y-8">
               <div className="overflow-hidden">
                 <motion.div
                   initial={{ y: "100%" }}
                   animate={{ y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="text-brand-yellow font-mono text-[10px] md:text-sm font-bold uppercase tracking-[0.4em]">Portfolio 2026</span>
+                  <span className="text-brand-yellow font-mono text-[9px] md:text-sm font-bold uppercase tracking-[0.3em] md:tracking-[0.4em]">Portfolio 2026</span>
                 </motion.div>
               </div>
 
               <div className="relative">
                 <motion.h1 
-                  className="text-white font-display text-6xl md:text-9xl uppercase tracking-tighter leading-none"
+                  className="text-white font-display text-5xl sm:text-6xl md:text-9xl uppercase tracking-tighter leading-none"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <span className="block italic opacity-40 text-4xl md:text-6xl mb-2">Gerard Luis</span>
+                  <span className="block italic opacity-40 text-3xl sm:text-4xl md:text-6xl mb-2">Gerard Luis</span>
                   <span className="block">Mandado</span>
                 </motion.h1>
 
@@ -258,7 +477,7 @@ export default function App() {
                 />
               </div>
 
-              <div className="flex justify-center gap-12 mt-12 overflow-hidden">
+              <div className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-3 overflow-hidden md:mt-12 md:gap-12">
                 {["Designer", "Developer", "Network"].map((role, i) => (
                   <motion.span
                     key={role}
@@ -274,7 +493,7 @@ export default function App() {
             </div>
 
             {/* Progress Bar */}
-            <div className="absolute bottom-12 left-12 right-12 w-[calc(100%-96px)] h-[1px] bg-white/10">
+            <div className="absolute bottom-8 left-6 right-6 h-[1px] bg-white/10 md:bottom-12 md:left-12 md:right-12 md:w-[calc(100%-96px)]">
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -289,12 +508,12 @@ export default function App() {
       {/* Subtle Background Marquee - Fixed & Optimized */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden flex flex-col justify-between opacity-[0.15]">
         <div className="noise-overlay opacity-[0.4]"></div>
-        <div className="flex animate-marquee whitespace-nowrap py-12">
+        <div className="flex animate-marquee whitespace-nowrap py-8 md:py-12">
           {[...Array(8)].map((_, i) => (
             <span key={i} className="text-[15vw] font-display uppercase mr-24">GERARD MANDADO • </span>
           ))}
         </div>
-        <div className="flex animate-marquee-reverse whitespace-nowrap self-end py-12">
+        <div className="hidden self-end whitespace-nowrap py-8 md:flex md:animate-marquee-reverse md:py-12">
           {[...Array(8)].map((_, i) => (
             <span key={i} className="text-[15vw] font-display uppercase mr-24">GERARD MANDADO • </span>
           ))}
@@ -305,19 +524,19 @@ export default function App() {
         initial={{ opacity: 0 }}
         animate={{ opacity: isIntroComplete ? 1 : 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
-        className="min-h-screen flex flex-col items-center justify-center p-4 md:p-12 relative"
+        className="relative flex min-h-screen flex-col items-center px-4 pb-10 pt-5 sm:px-5 sm:pb-12 sm:pt-6 md:px-12 md:pb-16 md:pt-5"
       >
         <motion.div 
           id="intro"
         initial={{ opacity: 0, y: 50 }}
         animate={isIntroComplete ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-[92%] max-w-[1080px] bg-brand-yellow p-8 md:p-12 relative z-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] my-8"
+        className="relative z-10 mb-8 w-[92%] max-w-[1080px] bg-brand-yellow p-5 shadow-[0_0_100px_rgba(0,0,0,0.5)] sm:p-6 md:mb-10 md:p-12"
       >
         <div className="relative">
           {/* Navigation Links */}
-          <div className="absolute -top-4 -left-4">
-            <nav className="flex flex-wrap gap-4 md:gap-10">
+          <div className="mb-6 md:absolute md:-top-4 md:-left-4 md:mb-0">
+            <nav className="flex flex-wrap gap-x-4 gap-y-2 md:gap-10">
               {["Intro", "About Me", "Projects", "Experience", "Contact"].map((item, i) => (
                 <motion.a 
                   key={item}
@@ -325,7 +544,7 @@ export default function App() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={isIntroComplete ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.8 + (i * 0.1) }}
-                  className="text-brand-black font-display text-base md:text-xl tracking-tighter hover:opacity-70 transition-opacity uppercase"
+                  className="text-sm text-brand-black font-display uppercase tracking-tighter transition-opacity hover:opacity-70 md:text-xl"
                 >
                   {item}
                 </motion.a>
@@ -335,14 +554,14 @@ export default function App() {
 
           <div className="flex flex-col">
             {/* The Main Content Box (The Image with Overlays) */}
-            <div className="ml-0 lg:ml-12 mt-8 relative max-w-[85%]">
-              <div className="w-full aspect-[16/9] md:aspect-[16/8] bg-brand-black relative overflow-hidden">
+            <div className="relative mt-6 w-full max-w-full lg:ml-12 lg:mt-8 lg:max-w-[85%]">
+              <div className="relative w-full overflow-hidden bg-brand-black aspect-[5/6] sm:aspect-[4/5] md:aspect-[16/8]">
                 {/* Noise inside black box only */}
                 <div className="noise-overlay"></div>
                 {/* The Image - Larger, aligned left, reaching towards the top */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-end justify-start">
                   <motion.img 
-                    src="/Public/Other images/1.png" 
+                    src={HERO_IMAGE_SRC}
                     alt="Gerard Mandado" 
                     initial={{ scale: 1.1, opacity: 0 }}
                     animate={isIntroComplete ? { scale: 1, opacity: 0.7 } : {}}
@@ -356,14 +575,14 @@ export default function App() {
                 </div>
                 
                 {/* Content Overlay Grid */}
-                <div className="absolute inset-0 p-6 md:p-12 font-mono flex flex-col justify-between z-10">
+                <div className="absolute inset-0 z-10 flex flex-col justify-between p-4 font-mono sm:p-5 md:p-12">
                   {/* Top Row - Bio pushed to the right */}
                   <div className="grid grid-cols-12">
                     <motion.div 
                       initial={{ opacity: 0, x: 20 }}
                       animate={isIntroComplete ? { opacity: 1, x: 0 } : {}}
                       transition={{ duration: 0.8, delay: 0.6 }}
-                      className="col-span-12 md:col-start-8 md:col-span-5 space-y-2 text-right"
+                      className="col-span-12 space-y-2 text-left md:col-start-8 md:col-span-5 md:text-right"
                     >
                       <span className="text-brand-yellow text-[10px] font-bold">INFO</span>
                       <p className="text-white text-[10px] md:text-[11px] leading-[1.4] tracking-tight">
@@ -378,10 +597,10 @@ export default function App() {
                       initial={{ opacity: 0, x: 20 }}
                       animate={isIntroComplete ? { opacity: 1, x: 0 } : {}}
                       transition={{ duration: 0.8, delay: 0.8 }}
-                      className="col-span-12 md:col-start-9 md:col-span-4 text-right"
+                      className="col-span-12 text-left md:col-start-9 md:col-span-4 md:text-right"
                     >
                       <span className="text-brand-yellow text-[10px] font-bold mb-4 block">SKILLS</span>
-                      <ul className="text-white text-[11px] md:text-[12px] md:leading-[1.1] uppercase flex flex-col items-end gap-1 tracking-[0.2em] font-bold">
+                      <ul className="flex flex-col gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white md:items-end md:text-[12px] md:leading-[1.1] md:tracking-[0.2em]">
                         {["Networking", "Full Stack", "Web Architecture", "Cloud Infrastructure"].map((skill, index) => (
                           <motion.li 
                             key={skill}
@@ -397,7 +616,7 @@ export default function App() {
                   </div>
 
                   {/* Bottom Row */}
-                  <div className="flex justify-between items-end">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={isIntroComplete ? { opacity: 1, y: 0 } : {}}
@@ -412,7 +631,7 @@ export default function App() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={isIntroComplete ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.6, delay: 1.3 }}
-                      className="text-right"
+                      className="sm:text-right"
                     >
                       <span className="text-brand-yellow text-[10px] font-bold">ROLES</span>
                       <p className="text-white text-[10px] md:text-[11px] leading-none uppercase font-bold mt-1">
@@ -449,7 +668,7 @@ export default function App() {
         id="about-me"
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-[92%] max-w-[1080px] bg-brand-black relative z-10 shadow-[0_0_80px_rgba(0,0,0,0.5)] mb-8 overflow-hidden border border-brand-yellow/10 group"
       >
@@ -459,13 +678,13 @@ export default function App() {
         <div className="absolute top-0 right-0 w-full lg:w-1/2 h-full z-0 overflow-hidden pointer-events-none">
           {/* Default Image */}
           <img 
-            src="/Public/Other images/2X2.png" 
+            src={ABOUT_IMAGE_SRC}
             className="absolute inset-0 w-full h-full object-cover object-center grayscale contrast-[1.1] opacity-90 mix-blend-screen transition-all duration-700 scale-[1.2] group-hover:opacity-0" 
             alt="Gerard Luis Mandado"
           />
           {/* Hover Image */}
           <img 
-            src="/Public/Other images/1-1.png" 
+            src={ABOUT_HOVER_IMAGE_SRC}
             className="absolute inset-0 w-full h-full object-cover object-[center_20%] grayscale contrast-[1.1] opacity-0 mix-blend-screen transition-all duration-700 scale-[1.2] group-hover:opacity-90" 
             alt="Gerard Luis Mandado Hover"
           />
@@ -489,6 +708,7 @@ export default function App() {
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
                 I'm based in Lapu-Lapu City, Philippines, working at the edge of network engineering and web design. I focus on creating digital systems that aren't just beautiful, but built to last.
@@ -496,6 +716,7 @@ export default function App() {
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="opacity-70"
               >
@@ -504,6 +725,7 @@ export default function App() {
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
                 className="opacity-50 italic"
               >
@@ -511,12 +733,13 @@ export default function App() {
               </motion.p>
             </div>
 
-            <div className="pt-6 flex flex-wrap lg:flex-nowrap items-stretch gap-4">
+            <div className="flex flex-wrap items-stretch gap-3 pt-6 lg:flex-nowrap lg:gap-4">
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.4, delay: 0.6 }}
-                className="border border-brand-yellow/20 px-4 py-2 bg-brand-yellow/[0.03] backdrop-blur-sm whitespace-nowrap"
+                className="border border-brand-yellow/20 bg-brand-yellow/[0.03] px-4 py-2 backdrop-blur-sm whitespace-normal sm:whitespace-nowrap"
               >
                 <span className="block text-[8px] font-bold text-brand-yellow/50 uppercase mb-1">Located in</span>
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">CEBU, PHILIPPINES</span>
@@ -524,8 +747,9 @@ export default function App() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.4, delay: 0.7 }}
-                className="border border-brand-yellow/20 px-4 py-2 bg-brand-yellow/[0.03] backdrop-blur-sm whitespace-nowrap"
+                className="border border-brand-yellow/20 bg-brand-yellow/[0.03] px-4 py-2 backdrop-blur-sm whitespace-normal sm:whitespace-nowrap"
               >
                 <span className="block text-[8px] font-bold text-brand-yellow/50 uppercase mb-1">Main Focus</span>
                 <span className="text-[10px] font-bold text-white uppercase tracking-wider">FULL STACK & NETWORK SYSTEMS</span>
@@ -533,9 +757,10 @@ export default function App() {
                 <motion.button 
                   initial={{ opacity: 0, x: 20 }}
                   whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
                   transition={{ duration: 0.6, delay: 0.8 }}
                   onClick={() => setShowResume(true)}
-                  className="border border-brand-yellow/30 px-6 bg-brand-yellow/[0.05] backdrop-blur-sm cursor-pointer transition-all duration-300 hover:bg-brand-yellow/[0.15] hover:border-brand-yellow/50 group/resume flex items-center justify-center min-h-[46px] whitespace-nowrap"
+                  className="flex min-h-[46px] w-full items-center justify-center border border-brand-yellow/30 bg-brand-yellow/[0.05] px-5 text-center backdrop-blur-sm transition-all duration-300 group/resume hover:border-brand-yellow/50 hover:bg-brand-yellow/[0.15] sm:w-auto sm:px-6"
                 >
                   <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em] group-hover/resume:text-brand-yellow transition-colors">VIEW RESUME</span>
                 </motion.button>
@@ -549,13 +774,13 @@ export default function App() {
         id="projects"
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-[92%] max-w-[1080px] bg-white p-8 md:p-12 relative z-10 shadow-[0_0_80px_rgba(0,0,0,0.1)] mb-8"
       >
         <div className="noise-overlay opacity-[0.05]"></div>
         <div className="relative z-10">
-          <div className="flex justify-between items-center mb-12">
+          <div className="mb-10 flex flex-col items-start gap-4 md:mb-12 md:flex-row md:items-center md:justify-between">
             <div className="flex gap-2 items-center">
               <span className="text-white bg-brand-black px-2 py-0.5 text-[10px] font-bold">PROJECTS</span>
               <h2 className="text-brand-black font-mono text-xs font-bold uppercase tracking-widest">Featured Projects // 2024-2026</h2>
@@ -571,7 +796,7 @@ export default function App() {
                 key={project.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 whileHover={{ x: 8 }}
                 onClick={() => {
@@ -605,13 +830,13 @@ export default function App() {
         id="experience"
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-[92%] max-w-[1080px] bg-brand-yellow p-8 md:p-12 relative z-10 shadow-[0_0_60px_rgba(0,0,0,0.2)] mb-8"
       >
         <div className="noise-overlay opacity-[0.1]"></div>
         <div className="relative z-10">
-          <div className="flex justify-between items-center mb-8">
+          <div className="mb-8 flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex gap-2 items-center">
               <span className="text-white bg-brand-black px-2 py-0.5 text-[10px] font-bold">CAREER</span>
               <h2 className="text-brand-black font-mono text-xs font-bold uppercase tracking-widest">My Career Journey</h2>
@@ -637,12 +862,12 @@ export default function App() {
                 key={index}
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: false }}
+                viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: index * 0.2 }}
-                className="flex flex-col md:flex-row md:justify-between items-start border-b border-brand-black/20 pb-6 group"
+                className="group flex flex-col items-start border-b border-brand-black/20 pb-6 md:flex-row md:justify-between"
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="mb-2 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
                     <h3 className="text-brand-black font-display text-2xl md:text-3xl uppercase tracking-tighter">{exp.role}</h3>
                     <span className="text-[10px] font-mono border border-brand-black/20 px-2 py-0.5 rounded-full uppercase">{exp.company}</span>
                   </div>
@@ -665,7 +890,7 @@ export default function App() {
         id="contact"
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: false, amount: 0.3 }}
+        viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-[92%] max-w-[1080px] bg-brand-black relative z-10 shadow-[0_0_80px_rgba(0,0,0,0.5)] mb-20 overflow-hidden border border-brand-yellow/10"
       >
@@ -680,7 +905,7 @@ export default function App() {
             <motion.div 
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false }}
+              viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.8 }}
               className="space-y-12"
             >
@@ -702,6 +927,7 @@ export default function App() {
                     key={index}
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
                     transition={{ duration: 0.5, delay: 0.3 + (index * 0.1) }}
                     className="flex items-center gap-4 text-white group"
                   >
@@ -710,7 +936,7 @@ export default function App() {
                     </div>
                     <div>
                       <span className="block text-[8px] font-bold text-brand-yellow/50 uppercase">{item.label}</span>
-                      <a href={item.href} className="text-sm font-mono hover:text-brand-yellow transition-colors tracking-tight">{item.value}</a>
+                      <a href={item.href} className="break-all text-sm font-mono tracking-tight transition-colors hover:text-brand-yellow sm:break-normal">{item.value}</a>
                     </div>
                   </motion.div>
                 ))}
@@ -732,11 +958,12 @@ export default function App() {
                       rel="noopener noreferrer"
                       initial={{ opacity: 0, scale: 0.5 }}
                       whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true, amount: 0.2 }}
                       transition={{ duration: 0.4, delay: 0.5 + (index * 0.1) }}
-                      className="w-12 h-12 border border-brand-yellow/20 flex items-center justify-center text-white bg-brand-yellow/5 hover:bg-brand-yellow hover:text-brand-black transition-all group relative"
+                      className="group relative flex h-11 w-11 items-center justify-center border border-brand-yellow/20 bg-brand-yellow/5 text-white transition-all hover:bg-brand-yellow hover:text-brand-black md:h-12 md:w-12"
                     >
                       {social.icon}
-                      <span className="absolute -top-8 bg-brand-yellow text-brand-black text-[9px] font-bold px-2 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                      <span className="pointer-events-none absolute -top-8 hidden whitespace-nowrap bg-brand-yellow px-2 py-0.5 text-[9px] font-bold text-brand-black opacity-0 transition-opacity group-hover:opacity-100 md:block">
                         {social.label}
                       </span>
                     </motion.a>
@@ -749,17 +976,29 @@ export default function App() {
             <motion.div 
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false }}
+              viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.8 }}
               className="relative"
             >
-              <form className="space-y-6 relative z-10" onSubmit={(e) => e.preventDefault()}>
+              <form
+                ref={contactFormRef}
+                className="space-y-6 relative z-10"
+                onSubmit={handleContactSubmit}
+              >
+                <input type="hidden" name="to_email" value={CONTACT_RECEIVER_EMAIL} />
+                <input type="hidden" name="to_name" value={CONTACT_RECEIVER_NAME} />
+                <input type="hidden" name="reply_to" value={contactForm.user_email} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="block text-[9px] font-bold text-brand-yellow/50 uppercase tracking-widest ml-1">Name</label>
                     <input 
                       type="text" 
+                      name="user_name"
                       placeholder="Your Name" 
+                      value={contactForm.user_name}
+                      onChange={handleContactInputChange}
+                      autoComplete="name"
+                      required
                       className="w-full bg-brand-yellow/5 border border-brand-yellow/20 p-4 font-mono text-xs text-white outline-none focus:border-brand-yellow/60 transition-colors uppercase placeholder:opacity-20"
                     />
                   </div>
@@ -767,7 +1006,12 @@ export default function App() {
                     <label className="block text-[9px] font-bold text-brand-yellow/50 uppercase tracking-widest ml-1">Email</label>
                     <input 
                       type="email" 
+                      name="user_email"
                       placeholder="Your Email" 
+                      value={contactForm.user_email}
+                      onChange={handleContactInputChange}
+                      autoComplete="email"
+                      required
                       className="w-full bg-brand-yellow/5 border border-brand-yellow/20 p-4 font-mono text-xs text-white outline-none focus:border-brand-yellow/60 transition-colors uppercase placeholder:opacity-20"
                     />
                   </div>
@@ -775,19 +1019,42 @@ export default function App() {
                 <div className="space-y-2">
                   <label className="block text-[9px] font-bold text-brand-yellow/50 uppercase tracking-widest ml-1">Message</label>
                   <textarea 
+                    name="message"
                     rows={6}
                     placeholder="Write your message here..." 
+                    value={contactForm.message}
+                    onChange={handleContactInputChange}
+                    required
                     className="w-full bg-brand-yellow/5 border border-brand-yellow/20 p-4 font-mono text-xs text-white outline-none focus:border-brand-yellow/60 resize-none transition-colors uppercase placeholder:opacity-20"
                   ></textarea>
+                </div>
+                <div className="space-y-3">
+                  {!isEmailJsConfigured && (
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-brand-yellow/60">
+                      Add `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, and `VITE_EMAILJS_PUBLIC_KEY` to your `.env` file to enable sending.
+                    </p>
+                  )}
+                  {contactStatus.type !== "idle" && (
+                    <p
+                      className={`text-[10px] font-mono uppercase tracking-wider ${
+                        contactStatus.type === "success"
+                          ? "text-brand-yellow"
+                          : "text-red-300"
+                      }`}
+                    >
+                      {contactStatus.message}
+                    </p>
+                  )}
                 </div>
                 <motion.button 
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
-                  className="w-full bg-brand-yellow text-brand-black p-4 font-bold font-mono text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[4px_4px_0_rgba(255,255,255,0.1)] active:translate-x-0 active:translate-y-0"
+                  disabled={isSendingMessage}
+                  className="w-full bg-brand-yellow text-brand-black p-4 font-bold font-mono text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[4px_4px_0_rgba(255,255,255,0.1)] active:translate-x-0 active:translate-y-0 disabled:opacity-60 disabled:cursor-wait disabled:hover:translate-x-0 disabled:hover:translate-y-0"
                 >
                   <Send size={16} />
-                  Send Message
+                  {isSendingMessage ? "Sending..." : "Send Message"}
                 </motion.button>
               </form>
             </motion.div>
@@ -810,14 +1077,14 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-5xl h-[90vh] bg-brand-black border border-brand-yellow/20 flex flex-col z-10"
+              className="relative z-10 flex h-[90vh] w-full max-w-5xl flex-col border border-brand-yellow/20 bg-brand-black"
             >
               {/* Modal Header */}
-              <div className="p-4 border-b border-brand-yellow/10 flex justify-between items-center bg-brand-black">
-                <div className="flex items-center gap-3">
+              <div className="flex items-start justify-between gap-3 border-b border-brand-yellow/10 bg-brand-black p-3 sm:items-center sm:p-4">
+                <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                   <span className="text-brand-yellow font-mono text-[10px] font-bold uppercase tracking-widest">Document Viewer</span>
-                  <div className="h-4 w-[1px] bg-brand-yellow/20"></div>
-                  <span className="text-white font-display text-sm md:text-base uppercase tracking-tight">Resume- Gerard Luis Mandado.pdf</span>
+                  <div className="hidden h-4 w-[1px] bg-brand-yellow/20 sm:block"></div>
+                  <span className="min-w-0 break-words text-white font-display text-xs uppercase tracking-tight sm:text-sm md:text-base">Resume- Gerard Luis Mandado.pdf</span>
                 </div>
                 <button 
                   onClick={() => setShowResume(false)}
@@ -830,7 +1097,7 @@ export default function App() {
               {/* PDF Container */}
               <div className="flex-1 bg-white/5 relative overflow-hidden">
                 <iframe 
-                  src="/Public/Resume-%20Gerard%20Luis%20Mandado.pdf#toolbar=0" 
+                  src={`${RESUME_FILE_SRC}#toolbar=0`}
                   className="w-full h-full border-none"
                   title="Resume Viewer"
                 />
@@ -839,7 +1106,7 @@ export default function App() {
               {/* Modal Footer */}
               <div className="p-3 border-t border-brand-yellow/10 bg-brand-black flex justify-end gap-4">
                 <a 
-                  href="/Public/Resume-%20Gerard%20Luis%20Mandado.pdf" 
+                  href={RESUME_FILE_SRC}
                   download 
                   className="text-[10px] font-bold text-brand-yellow uppercase tracking-widest hover:underline"
                 >
@@ -881,28 +1148,31 @@ export default function App() {
             {/* Close Button */}
             <button 
               onClick={() => setSelectedProject(null)}
-              className="absolute top-6 right-6 md:top-10 md:right-10 w-12 h-12 flex items-center justify-center text-white bg-white/10 backdrop-blur-md border border-white/20 hover:bg-brand-yellow hover:text-brand-black transition-all duration-300 z-[320] group"
+              className="group absolute right-4 top-4 z-[320] flex h-10 w-10 items-center justify-center border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all duration-300 hover:bg-brand-yellow hover:text-brand-black md:right-10 md:top-10 md:h-12 md:w-12"
               title="Close"
             >
-              <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+              <X size={20} className="transition-transform duration-300 group-hover:rotate-90 md:hidden" />
+              <X size={24} className="hidden transition-transform duration-300 group-hover:rotate-90 md:block" />
             </button>
 
             {/* Navigation Controls */}
             <button 
               onClick={prevImage}
-              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-[120]"
+              className="absolute left-2 top-1/2 z-[120] -translate-y-1/2 text-white/50 transition-colors hover:text-white md:left-8"
             >
-              <ChevronLeft size={48} />
+              <ChevronLeft size={32} className="md:hidden" />
+              <ChevronLeft size={48} className="hidden md:block" />
             </button>
             <button 
               onClick={nextImage}
-              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors z-[120]"
+              className="absolute right-2 top-1/2 z-[120] -translate-y-1/2 text-white/50 transition-colors hover:text-white md:right-8"
             >
-              <ChevronRight size={48} />
+              <ChevronRight size={32} className="md:hidden" />
+              <ChevronRight size={48} className="hidden md:block" />
             </button>
 
-            <div className="w-full max-w-6xl flex flex-col items-center justify-center gap-10 relative z-[110]">
-              <div className="relative w-full aspect-video md:aspect-[21/9] overflow-hidden flex items-center justify-center group">
+            <div className="relative z-[110] flex w-full max-w-6xl flex-col items-center justify-center gap-6 md:gap-10">
+              <div className="group relative flex w-full aspect-[4/3] items-center justify-center overflow-hidden sm:aspect-video md:aspect-[21/9]">
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={currentImageIndex}
@@ -916,13 +1186,13 @@ export default function App() {
                 </AnimatePresence>
                 
                 {/* Image Counter Overlay */}
-                <div className="absolute bottom-4 left-4 bg-brand-yellow text-brand-black px-3 py-1 font-mono text-[10px] font-bold z-20">
+                <div className="absolute bottom-3 left-3 z-20 bg-brand-yellow px-3 py-1 font-mono text-[10px] font-bold text-brand-black md:bottom-4 md:left-4">
                   {currentImageIndex + 1} / {selectedProject.images.length}
                 </div>
               </div>
 
-              <div className="text-center space-y-4 max-w-3xl px-4 relative z-10">
-                <h2 className="text-brand-yellow font-display text-4xl md:text-6xl uppercase tracking-tighter drop-shadow-lg">
+              <div className="relative z-10 max-w-3xl space-y-4 px-4 text-center">
+                <h2 className="text-brand-yellow font-display text-3xl uppercase tracking-tighter drop-shadow-lg sm:text-4xl md:text-6xl">
                   {selectedProject.title}
                 </h2>
                 <div className="h-[2px] w-24 bg-brand-yellow mx-auto"></div>
@@ -943,11 +1213,11 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-[90] bg-brand-yellow text-brand-black p-4 shadow-xl hover:-translate-y-1 active:translate-y-0 transition-transform group"
+            className="group fixed bottom-5 right-4 z-[90] bg-brand-yellow p-3 text-brand-black shadow-xl transition-transform hover:-translate-y-1 active:translate-y-0 md:bottom-8 md:right-8 md:p-4"
           >
             <div className="noise-overlay opacity-10"></div>
             <ArrowUp size={24} className="relative z-10" />
-            <div className="absolute -top-1 -right-1 bg-white border border-brand-black text-[8px] font-bold px-1 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute -right-1 -top-1 hidden border border-brand-black bg-white px-1 py-0.5 text-[8px] font-bold opacity-0 transition-opacity group-hover:opacity-100 md:block">
               TOP
             </div>
           </motion.button>
@@ -955,7 +1225,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Bottom Labeling for context */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex gap-8 text-white/20 font-mono text-[10px] tracking-widest uppercase">
+      <div className="fixed bottom-4 left-1/2 hidden -translate-x-1/2 gap-8 text-[10px] font-mono uppercase tracking-widest text-white/20 md:flex">
         <span>Portfolio 2026</span>
         <span>Gerard Mandado // All Rights Reserved</span>
       </div>
